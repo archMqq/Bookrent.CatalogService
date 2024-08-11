@@ -19,7 +19,7 @@ namespace Bookrent.CatalogService.Controllers
         [Route("getall")]
         public async Task<IActionResult> getAll()
         {
-            var booksRes = await _service.getAll();
+            var booksRes = await _service.GetAll();
             if (booksRes.BadRequest && booksRes.Errors is not null)
                     return BadRequest();
            if (booksRes.NotFound && booksRes.Errors is not null)

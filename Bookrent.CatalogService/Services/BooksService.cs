@@ -1,19 +1,23 @@
 ﻿using BookRent.Models;
 using BookRent.ServiceClasses;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
+using System.Text.Json;
 
 namespace Bookrent.CatalogService.Services
 {
     public class BooksService
     {
         private readonly BookRentContext _context;
+        private readonly RedisCache _redisCache;
 
-        public BooksService(BookRentContext context)
+        public BooksService(BookRentContext context, RedisCache redisCache)
         {
             _context = context;
+            _redisCache = redisCache;
         }
 
-        public async Task<ServiceResult<ICollection<Book>>> getAll()
+        public async Task<ServiceResult<ICollection<Book>>> GetAll()
         {
             List<Book> books = await _context.Books.Include(b => b.Publisher).
                 Include(b => b.Authors).Include(b => b.Categories).ToListAsync();
@@ -21,7 +25,7 @@ namespace Bookrent.CatalogService.Services
             if (books is null)
                 return new ServiceResult<ICollection<Book>>
                 {
-                    Ok = false,
+                    NotFound = true,
                     Errors = new ServiceErrors
                     {
                         Error = "Возвращаемый список пуст."
@@ -35,13 +39,38 @@ namespace Bookrent.CatalogService.Services
             };
         }
 
-        public async Task<ServiceResult<Book>> get(string strId)
+        public async Task<ServiceResult<ICollection<Book>>> GetDailyCache()
+        {
+            var cacheKey = (DateTime.Today.Day + DateTime.Today.Month.ToString()).ToString();
+
+            var cachedData = await _redisCache.GetAsync(cacheKey);
+
+            if (cachedData == null)
+            {
+                return new ServiceResult<ICollection<Book>>
+                {
+                    NotFound = true,
+                    Errors = new ServiceErrors
+                    {
+                        Error = "Кэш не содержит списка книг с таким ключом"
+                    }
+                };
+            }
+
+            var books = JsonSerializer.Deserialize<List<Book>>(cachedData);
+            return new ServiceResult<ICollection<Book>>
+            {
+                Ok = true,
+                Result = books
+            };
+        }
+
+        public async Task<ServiceResult<int>> GetCountOfFree(string strId)
         {
             int id;
             if (!int.TryParse(strId, out id))
-                return new ServiceResult<Book>
+                return new ServiceResult<int>
                 {
-                    Ok = false,
                     BadRequest = true,
                     Errors = new ServiceErrors
                     {
@@ -50,10 +79,49 @@ namespace Bookrent.CatalogService.Services
 
                     }
                 };
-            return await get(id);
+            return await GetCountOfFree(id);
         }
 
-        public async Task<ServiceResult<Book>> get(int id)
+        public async Task<ServiceResult<int>> GetCountOfFree(int id)
+        {
+            var book = await _context.Books.
+                FirstOrDefaultAsync(x => x.Id == id);
+
+            return book is not null 
+                ? new ServiceResult<int>
+                {
+                    Ok = true,
+                    Result = book.CountOfFree
+                }
+                : new ServiceResult<int>
+                {
+                    NotFound = true,
+                    Errors = new ServiceErrors
+                    {
+                        Fields = new[] { "id" },
+                        Error = "Книга с таким id не найдена."
+                    }
+                };
+        }
+
+        public async Task<ServiceResult<Book>> Get(string strId)
+        {
+            int id;
+            if (!int.TryParse(strId, out id))
+                return new ServiceResult<Book>
+                {
+                    BadRequest = true,
+                    Errors = new ServiceErrors
+                    {
+                        Fields = new[] { "id" },
+                        Error = "id не соответствует формату."
+
+                    }
+                };
+            return await Get(id);
+        }
+
+        public async Task<ServiceResult<Book>> Get(int id)
         {
             var book =  await _context.Books.
                 FirstOrDefaultAsync(b => b.Id == id);
@@ -66,7 +134,6 @@ namespace Bookrent.CatalogService.Services
                 }
                 : new ServiceResult<Book>
                 {
-                    Ok = false,
                     NotFound = true,
                     Errors = new ServiceErrors
                     {
@@ -74,6 +141,45 @@ namespace Bookrent.CatalogService.Services
                         Error = "Книга с таким id не найдена."
                     }
                 };
+        }
+
+        public async Task<ServiceResult<bool>> RentBook(int id)
+        {
+            var bookCount = await GetCountOfFree(id);
+            if (bookCount.NotFound)
+                return new ServiceResult<bool>
+                {
+                    NotFound = true,
+                    Errors = new ServiceErrors
+                    {
+                        Error = "Книга с таким id не найдена.",
+                        Fields = new[] { "id" }
+                    }
+                };
+            
+            if (bookCount.Result == 0)
+                return new ServiceResult<bool>
+                {
+                    NotFound = true,
+                    Errors = new ServiceErrors
+                    {
+                        Error = "Нет свободных книг",
+                        Fields = new[] { "countOfFree" }
+                    }
+                };
+
+            var bookRes = await Get(id);
+            var book = bookRes.Result;
+
+            book.CountOfFree--;
+            _context.Books.Update(book);
+            _context.SaveChanges();
+
+            return new ServiceResult<bool>
+            {
+                Ok = true,
+                Result = true
+            };
         }
     }
 }

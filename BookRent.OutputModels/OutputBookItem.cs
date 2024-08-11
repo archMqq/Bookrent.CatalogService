@@ -28,6 +28,8 @@ namespace BookRent.OutputModels
         public OutputCategoryList Categories { get; set; }
         [JsonPropertyName ("rentedTimes")]
         public string RentedTimes { get; set; }
+        [JsonPropertyName("countOfFree")]
+        public string CountOfFree {  get; set; }
 
         public OutputBookItem(Book book)
         {
@@ -40,6 +42,7 @@ namespace BookRent.OutputModels
             PublicationYear = book.PublicationYear.ToString();
             Categories = new OutputCategoryList(book.Categories);
             RentedTimes = book.RentedTimes.ToString();
+            CountOfFree = book.CountOfFree.ToString();
         }
     }
 }
