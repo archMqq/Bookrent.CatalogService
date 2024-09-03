@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookRent.Models", "..\BookR
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookRent.ServiceClasses", "BookRent.ServiceClasses\BookRent.ServiceClasses.csproj", "{EEE112E8-B664-4B48-AF21-7EEEDCF3274F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookRent.OutputModels", "BookRent.OutputModels\BookRent.OutputModels.csproj", "{2C1E6E38-FE18-45D5-A1C5-ADDF21AED3B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BookRent.OutputModels", "BookRent.OutputModels\BookRent.OutputModels.csproj", "{2C1E6E38-FE18-45D5-A1C5-ADDF21AED3B6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BookRent.CatalogService.Service", "BookRent.CatalogService.Service\BookRent.CatalogService.Service.csproj", "{DB6FF16B-E22D-42C9-8750-D8FA9F6A7380}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{2C1E6E38-FE18-45D5-A1C5-ADDF21AED3B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2C1E6E38-FE18-45D5-A1C5-ADDF21AED3B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2C1E6E38-FE18-45D5-A1C5-ADDF21AED3B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DB6FF16B-E22D-42C9-8750-D8FA9F6A7380}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB6FF16B-E22D-42C9-8750-D8FA9F6A7380}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB6FF16B-E22D-42C9-8750-D8FA9F6A7380}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB6FF16B-E22D-42C9-8750-D8FA9F6A7380}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

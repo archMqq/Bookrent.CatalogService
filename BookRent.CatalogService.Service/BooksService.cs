@@ -143,9 +143,9 @@ namespace Bookrent.CatalogService.Services
                 };
         }
 
-        public async Task<ServiceResult<bool>> RentBook(int id)
+        public async Task<ServiceResult<bool>> RentBook(int bookId, string userLogin)
         {
-            var bookCount = await GetCountOfFree(id);
+            var bookCount = await GetCountOfFree(bookId);
             if (bookCount.NotFound)
                 return new ServiceResult<bool>
                 {
@@ -168,7 +168,7 @@ namespace Bookrent.CatalogService.Services
                     }
                 };
 
-            var bookRes = await Get(id);
+            var bookRes = await Get(bookId);
             var book = bookRes.Result;
 
             book.CountOfFree--;
