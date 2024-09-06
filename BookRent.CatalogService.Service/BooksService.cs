@@ -143,43 +143,6 @@ namespace Bookrent.CatalogService.Services
                 };
         }
 
-        public async Task<ServiceResult<bool>> RentBook(int bookId, string userLogin)
-        {
-            var bookCount = await GetCountOfFree(bookId);
-            if (bookCount.NotFound)
-                return new ServiceResult<bool>
-                {
-                    NotFound = true,
-                    Errors = new ServiceErrors
-                    {
-                        Error = "Книга с таким id не найдена.",
-                        Fields = new[] { "id" }
-                    }
-                };
-            
-            if (bookCount.Result == 0)
-                return new ServiceResult<bool>
-                {
-                    NotFound = true,
-                    Errors = new ServiceErrors
-                    {
-                        Error = "Нет свободных книг",
-                        Fields = new[] { "countOfFree" }
-                    }
-                };
-
-            var bookRes = await Get(bookId);
-            var book = bookRes.Result;
-
-            book.CountOfFree--;
-            _context.Books.Update(book);
-            _context.SaveChanges();
-
-            return new ServiceResult<bool>
-            {
-                Ok = true,
-                Result = true
-            };
-        }
+       
     }
 }
